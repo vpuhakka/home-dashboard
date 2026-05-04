@@ -48,10 +48,95 @@ export function getPriceClass(price, lo, hi) {
   return 'price-high';
 }
 
+// ── Weather ───────────────────────────────────────────────────────────────────
+const WEATHER_EMOJIS = {
+  0: '☀️',  1: '🌤️', 2: '⛅', 3: '☁️',
+  45: '🌫️', 48: '🌫️',
+  51: '🌦️', 53: '🌦️', 55: '🌧️',
+  61: '🌧️', 63: '🌧️', 65: '🌧️',
+  71: '🌨️', 73: '🌨️', 75: '🌨️',
+  80: '🌦️', 81: '🌦️', 82: '🌧️',
+  95: '⛈️'
+};
+
+const WEATHER_LABELS = {
+  0:  'Clear sky',      1:  'Mainly clear',   2:  'Partly cloudy', 3:  'Overcast',
+  45: 'Foggy',          48: 'Foggy',
+  51: 'Light drizzle',  53: 'Drizzle',        55: 'Heavy drizzle',
+  61: 'Light rain',     63: 'Rain',           65: 'Heavy rain',
+  71: 'Light snow',     73: 'Snow',           75: 'Heavy snow',
+  80: 'Showers',        81: 'Showers',        82: 'Heavy showers',
+  95: 'Thunderstorm'
+};
+
+export function getWeatherEmoji(code) { return WEATHER_EMOJIS[code] ?? '🌡️'; }
+export function getWeatherLabel(code) { return WEATHER_LABELS[code] ?? 'Unknown'; }
+
+export function windDirection(degrees) {
+  const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  return dirs[Math.round(degrees / 45) % 8];
+}
+
+const WEATHER_URL =
+  'https://api.open-meteo.com/v1/forecast'
+  + '?latitude=60.4736&longitude=25.0900'
+  + '&current=temperature_2m,relative_humidity_2m,precipitation_probability,'
+  + 'wind_speed_10m,wind_direction_10m,weather_code'
+  + '&daily=weather_code,temperature_2m_max,temperature_2m_min'
+  + '&timezone=Europe%2FHelsinki&forecast_days=4';
+
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+function makeEl(tag, className, text) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  if (text !== undefined) el.textContent = text;
+  return el;
+}
+
+function renderWeather(data) {
+  const c = data.current;
+  setEl('w-emoji',     getWeatherEmoji(c.weather_code));
+  setEl('w-temp',      String(Math.round(c.temperature_2m)));
+  setEl('w-condition', getWeatherLabel(c.weather_code));
+  setEl('w-details',
+    'Rain ' + c.precipitation_probability + '%  ·  '
+    + 'Wind ' + Math.round(c.wind_speed_10m) + ' m/s ' + windDirection(c.wind_direction_10m) + '  ·  '
+    + 'Humidity ' + c.relative_humidity_2m + '%'
+  );
+
+  const d = data.daily;
+  const forecastEl = document.getElementById('w-forecast');
+  while (forecastEl.firstChild) forecastEl.removeChild(forecastEl.firstChild);
+
+  for (let i = 1; i <= 3; i++) {
+    const dayName = DAY_NAMES[new Date(d.time[i] + 'T12:00:00').getDay()];
+    const row = document.createElement('div');
+    row.className = 'forecast-row';
+    row.appendChild(makeEl('span', 'forecast-day', dayName));
+    row.appendChild(makeEl('span', null, getWeatherEmoji(d.weather_code[i])));
+    row.appendChild(makeEl('span', 'forecast-temp',
+      Math.round(d.temperature_2m_max[i]) + '° / ' + Math.round(d.temperature_2m_min[i]) + '°'
+    ));
+    forecastEl.appendChild(row);
+  }
+}
+
+async function loadWeather() {
+  try {
+    const res = await fetch(WEATHER_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    renderWeather(await res.json());
+    stampUpdated();
+  } catch {
+    setEl('w-emoji',     '—');
+    setEl('w-temp',      '—');
+    setEl('w-condition', 'Weather unavailable');
+    setEl('w-details',   '');
+  }
+}
+
 // Stubs replaced in later tasks
-export function getWeatherEmoji() {}
-export function getWeatherLabel() {}
-export function windDirection() {}
 export function getUpcomingDepartures() { return []; }
 
 // ── Render + Fetch ────────────────────────────────────────────────────────────
@@ -103,3 +188,6 @@ setInterval(updateClock, 1000);
 
 loadElectricity();
 setInterval(loadElectricity, 60 * 60 * 1000); // 60 min
+
+loadWeather();
+setInterval(loadWeather, 30 * 60 * 1000); // 30 min
