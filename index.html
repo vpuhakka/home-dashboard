@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="clock">--:--</div>
+
+<div id="app">
+
+  <!-- Electricity -->
+  <div class="panel" id="electricity-panel">
+    <div class="panel-label">Electricity</div>
+    <div>
+      <span class="big-number" id="el-price">&#x2014;</span>
+      <span class="unit">c/kWh</span>
+    </div>
+    <div class="hi-lo">
+      <span class="lo">&#x2193; <span id="el-lo">&#x2014;</span></span>
+      <span class="hi">&#x2191; <span id="el-hi">&#x2014;</span></span>
+    </div>
+    <hr class="divider">
+    <div id="chart"></div>
+    <div class="chart-labels"><span>00</span><span>12</span><span>23</span></div>
+  </div>
+
+  <!-- Weather -->
+  <div class="panel" id="weather-panel">
+    <div class="panel-label">Weather &#xB7; J&#xe4;rvenp&#xe4;&#xe4;</div>
+    <div class="weather-current">
+      <div class="weather-emoji" id="w-emoji">&#x2014;</div>
+      <div>
+        <span class="big-number" id="w-temp">&#x2014;</span>
+        <span class="unit">&#xB0;C</span>
+      </div>
+    </div>
+    <div id="w-condition" style="font-size:0.85rem; color:#6b7280; margin-top:4px;">&#x2014;</div>
+    <div class="weather-details" id="w-details">&#x2014;</div>
+    <hr class="divider">
+    <div id="w-forecast"></div>
+  </div>
+
+  <!-- Trains -->
+  <div class="panel" id="trains-panel">
+    <div class="panel-label">&#x2192; Pasila</div>
+    <div id="trains-list"></div>
+  </div>
+
+</div>
+
+<div id="footer">Updated: <span id="last-updated">&#x2014;</span></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
