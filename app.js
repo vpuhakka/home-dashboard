@@ -54,6 +54,52 @@ export function getWeatherLabel() {}
 export function windDirection() {}
 export function getUpcomingDepartures() { return []; }
 
+// ── Render + Fetch ────────────────────────────────────────────────────────────
+function renderElectricity(data) {
+  const today = getTodayPrices(data);
+  const current = getCurrentPrice(today);
+  const { hi, lo } = getDayHiLo(today);
+
+  setEl('el-price', current !== null ? current.toFixed(1) : '—');
+  setEl('el-lo',    lo      !== null ? lo.toFixed(1)      : '—');
+  setEl('el-hi',    hi      !== null ? hi.toFixed(1)      : '—');
+
+  const chart = document.getElementById('chart');
+  while (chart.firstChild) chart.removeChild(chart.firstChild);
+  if (!today.length) return;
+
+  const now = new Date();
+  today.forEach(p => {
+    const bar = document.createElement('div');
+    bar.className = 'bar ' + getPriceClass(p.price, lo, hi);
+    bar.style.height = Math.max(4, (p.price / hi) * 100) + '%';
+
+    const start = new Date(p.startDate);
+    if (start <= now && now < new Date(start.getTime() + 3_600_000)) {
+      bar.classList.add('current');
+    }
+    bar.title = start.toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' })
+      + ': ' + p.price.toFixed(1) + ' c/kWh';
+    chart.appendChild(bar);
+  });
+}
+
+async function loadElectricity() {
+  try {
+    const res = await fetch('https://api.porssisahko.net/v1/latest-prices.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    renderElectricity(await res.json());
+    stampUpdated();
+  } catch {
+    setEl('el-price', '—');
+    setEl('el-lo',    '—');
+    setEl('el-hi',    '—');
+  }
+}
+
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 updateClock();
 setInterval(updateClock, 1000);
+
+loadElectricity();
+setInterval(loadElectricity, 60 * 60 * 1000); // 60 min
