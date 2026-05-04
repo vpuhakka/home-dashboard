@@ -48,6 +48,12 @@ export function getPriceClass(price, lo, hi) {
   return 'price-high';
 }
 
+// Stubs replaced in later tasks
+export function getWeatherEmoji() {}
+export function getWeatherLabel() {}
+export function windDirection() {}
+export function getUpcomingDepartures() { return []; }
+
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 updateClock();
 setInterval(updateClock, 1000);
