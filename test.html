@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Tests</title>
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    .pass { color: green; }
+    .fail { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+<h2>Dashboard Tests</h2>
+<div id="results"></div>
+<p id="summary" style="margin-top:16px; font-weight:bold;"></p>
+
+<script type="module">
+import {
+  getTodayPrices, getCurrentPrice, getDayHiLo, getPriceClass,
+  getWeatherEmoji, getWeatherLabel, windDirection,
+  getUpcomingDepartures
+} from './app.js';
+
+const out = document.getElementById('results');
+let passed = 0, failed = 0;
+
+function assert(label, condition) {
+  const div = document.createElement('div');
+  div.className = condition ? 'pass' : 'fail';
+  div.textContent = (condition ? 'PASS ' : 'FAIL ') + label;
+  out.appendChild(div);
+  condition ? passed++ : failed++;
+}
+
+// ── Fixtures ──────────────────────────────────────────────────────────────────
+// Derive the UTC offset for Europe/Helsinki so we can build UTC timestamps
+// that fall at specific Helsinki hours today.
+const offsetStr = new Date()
+  .toLocaleString('en', { timeZone: 'Europe/Helsinki', timeZoneName: 'shortOffset' })
+  .match(/GMT([+-]\d+)/)?.[1] ?? '+2';
+const utcOffset = parseInt(offsetStr, 10); // e.g. 3 for EEST
+
+const now = new Date();
+const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+
+function utcISOForHelsinkiHour(h) {
+  return new Date(Date.UTC(y, m, d, h - utcOffset, 0, 0)).toISOString();
+}
+
+const mockData = {
+  prices: [
+    { price: 2.0, startDate: utcISOForHelsinkiHour(0) },
+    { price: 1.5, startDate: utcISOForHelsinkiHour(1) },
+    { price: 3.0, startDate: utcISOForHelsinkiHour(2) },
+    { price: 5.0, startDate: utcISOForHelsinkiHour(3) },
+    { price: 7.8, startDate: utcISOForHelsinkiHour(4) },
+    { price: 6.0, startDate: utcISOForHelsinkiHour(5) },
+    { price: 4.0, startDate: utcISOForHelsinkiHour(6) },
+    { price: 3.5, startDate: utcISOForHelsinkiHour(7) },
+    // yesterday — must be excluded
+    { price: 99.0, startDate: new Date(Date.UTC(y, m, d - 1, 22 - utcOffset)).toISOString() }
+  ]
+};
+
+// ── getTodayPrices ─────────────────────────────────────────────────────────────
+const today = getTodayPrices(mockData);
+assert("getTodayPrices: returns 8 today prices", today.length === 8);
+assert("getTodayPrices: sorted ascending", today[0].price === 2.0);
+assert("getTodayPrices: excludes yesterday price", today.every(p => p.price !== 99.0));
+
+// ── getDayHiLo ────────────────────────────────────────────────────────────────
+const { hi, lo } = getDayHiLo(today);
+assert("getDayHiLo: hi is 7.8", hi === 7.8);
+assert("getDayHiLo: lo is 1.5", lo === 1.5);
+assert("getDayHiLo: empty array gives nulls", getDayHiLo([]).hi === null);
+
+// ── getCurrentPrice ───────────────────────────────────────────────────────────
+const nowHour = new Date();
+nowHour.setMinutes(0, 0, 0);
+assert("getCurrentPrice: matches current hour", getCurrentPrice([{ price: 4.2, startDate: nowHour.toISOString() }]) === 4.2);
+assert("getCurrentPrice: null for empty list", getCurrentPrice([]) === null);
+
+// ── getPriceClass ─────────────────────────────────────────────────────────────
+assert("getPriceClass: at lo -> price-low",  getPriceClass(1.5, 1.5, 7.8) === 'price-low');
+assert("getPriceClass: midpoint -> price-mid", getPriceClass(4.0, 1.5, 7.8) === 'price-mid');
+assert("getPriceClass: at hi -> price-high", getPriceClass(7.8, 1.5, 7.8) === 'price-high');
+assert("getPriceClass: flat range -> price-low", getPriceClass(5.0, 5.0, 5.0) === 'price-low');
+
+// ── Weather helpers ───────────────────────────────────────────────────────────
+assert("getWeatherEmoji: 0 -> clear sky emoji",   getWeatherEmoji(0) === '☀️');
+assert("getWeatherEmoji: 61 -> rain emoji",        getWeatherEmoji(61) === '🌧️');
+assert("getWeatherEmoji: unknown code -> thermometer", getWeatherEmoji(999) === '🌡️');
+assert("getWeatherLabel: 0 -> Clear sky",          getWeatherLabel(0) === 'Clear sky');
+assert("getWeatherLabel: 95 -> Thunderstorm",      getWeatherLabel(95) === 'Thunderstorm');
+assert("windDirection: 0deg -> N",   windDirection(0)   === 'N');
+assert("windDirection: 90deg -> E",  windDirection(90)  === 'E');
+assert("windDirection: 225deg -> SW",windDirection(225) === 'SW');
+assert("windDirection: 337deg -> N", windDirection(337) === 'N');
+
+// ── getUpcomingDepartures ─────────────────────────────────────────────────────
+const future1 = new Date(Date.now() + 10 * 60000).toISOString();
+const future2 = new Date(Date.now() + 25 * 60000).toISOString();
+const past    = new Date(Date.now() -  5 * 60000).toISOString();
+
+const mockTrains = [
+  {
+    timeTableRows: [
+      { stationShortCode: 'JPÄ', type: 'DEPARTURE', scheduledTime: future1, differenceInMinutes: 0 },
+      { stationShortCode: 'TKL', type: 'ARRIVAL',   scheduledTime: future1 },
+      { stationShortCode: 'PSL', type: 'ARRIVAL',   scheduledTime: future1 }
+    ]
+  },
+  {
+    timeTableRows: [
+      { stationShortCode: 'JPÄ', type: 'DEPARTURE', scheduledTime: future2, differenceInMinutes: 3 },
+      { stationShortCode: 'PSL', type: 'ARRIVAL',   scheduledTime: future2 }
+    ]
+  },
+  {
+    // already departed — must be excluded
+    timeTableRows: [
+      { stationShortCode: 'JPÄ', type: 'DEPARTURE', scheduledTime: past, differenceInMinutes: 0 },
+      { stationShortCode: 'PSL', type: 'ARRIVAL',   scheduledTime: past }
+    ]
+  },
+  {
+    // does not stop at PSL — must be excluded
+    timeTableRows: [
+      { stationShortCode: 'JPÄ', type: 'DEPARTURE', scheduledTime: future1, differenceInMinutes: 0 },
+      { stationShortCode: 'TKL', type: 'ARRIVAL',   scheduledTime: future1 }
+    ]
+  }
+];
+
+const deps = getUpcomingDepartures(mockTrains, 'JPÄ', 'PSL');
+assert("getUpcomingDepartures: 2 valid trains",    deps.length === 2);
+assert("getUpcomingDepartures: sorted ascending",  deps[0].scheduled < deps[1].scheduled);
+assert("getUpcomingDepartures: delay captured",    deps[1].delayMin === 3);
+assert("getUpcomingDepartures: respects count",    getUpcomingDepartures(mockTrains, 'JPÄ', 'PSL', 1).length === 1);
+
+// ── Summary ────────────────────────────────────────────────────────────────────
+document.getElementById('summary').textContent = passed + ' passed, ' + failed + ' failed';
+</script>
+</body>
+</html>
