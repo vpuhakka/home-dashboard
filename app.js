@@ -136,8 +136,87 @@ async function loadWeather() {
   }
 }
 
-// Stubs replaced in later tasks
-export function getUpcomingDepartures() { return []; }
+// ── Trains ────────────────────────────────────────────────────────────────────
+const FROM_STATION = 'JP'; // Järvenpää — verified in Task 6
+const TO_STATION   = 'PSL'; // Pasila
+
+export function getUpcomingDepartures(trains, fromCode, toCode, count = 3) {
+  const now = new Date();
+  const departures = [];
+
+  for (const train of trains) {
+    const rows = train.timeTableRows ?? [];
+    const fromIdx = rows.findIndex(r =>
+      r.stationShortCode === fromCode && r.type === 'DEPARTURE'
+    );
+    if (fromIdx === -1) continue;
+
+    const goesToDest = rows.slice(fromIdx + 1).some(r => r.stationShortCode === toCode);
+    if (!goesToDest) continue;
+
+    const row = rows[fromIdx];
+    const scheduled = new Date(row.scheduledTime);
+    if (scheduled <= now) continue;
+
+    departures.push({ scheduled, delayMin: row.differenceInMinutes ?? 0 });
+  }
+
+  return departures
+    .sort((a, b) => a.scheduled - b.scheduled)
+    .slice(0, count);
+}
+
+function renderTrains(departures) {
+  const list = document.getElementById('trains-list');
+  while (list.firstChild) list.removeChild(list.firstChild);
+
+  if (!departures.length) {
+    const row = document.createElement('div');
+    row.className = 'train-row';
+    const span = document.createElement('span');
+    span.className = 'train-time dash';
+    span.textContent = '—';
+    row.appendChild(span);
+    list.appendChild(row);
+    return;
+  }
+
+  departures.forEach(dep => {
+    const time  = dep.scheduled.toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' });
+    const delay = dep.delayMin;
+    const statusClass = delay === 0 ? 'status-ok' : delay <= 5 ? 'status-delay' : 'status-late';
+    const statusText  = delay === 0 ? 'On time' : '+' + delay + ' min';
+
+    const row = document.createElement('div');
+    row.className = 'train-row';
+
+    const timeEl = document.createElement('span');
+    timeEl.className = 'train-time';
+    timeEl.textContent = time;
+
+    const statusEl = document.createElement('span');
+    statusEl.className = 'train-status ' + statusClass;
+    statusEl.textContent = statusText;
+
+    row.appendChild(timeEl);
+    row.appendChild(statusEl);
+    list.appendChild(row);
+  });
+}
+
+async function loadTrains() {
+  try {
+    const url = 'https://rata.digitraffic.fi/api/v1/live-trains/station/' + FROM_STATION
+      + '?departing_trains=20&include_nonstopping=false';
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const trains = await res.json();
+    renderTrains(getUpcomingDepartures(trains, FROM_STATION, TO_STATION));
+    stampUpdated();
+  } catch {
+    renderTrains([]);
+  }
+}
 
 // ── Render + Fetch ────────────────────────────────────────────────────────────
 function renderElectricity(data) {
@@ -191,3 +270,6 @@ setInterval(loadElectricity, 60 * 60 * 1000); // 60 min
 
 loadWeather();
 setInterval(loadWeather, 30 * 60 * 1000); // 30 min
+
+loadTrains();
+setInterval(loadTrains, 60 * 1000); // 1 min
