@@ -63,7 +63,7 @@ Global: current time in top-right corner, last-updated timestamp at page bottom.
 - Each departure shows: time (large, bold) + status ("On time" green, "+N min" amber/red)
 - Dividers between departures
 - **Data source:** Digitraffic Finland (`https://rata.digitraffic.fi/api/v1/`) — free, no auth, CORS-enabled
-- **Refresh:** every 2 minutes
+- **Refresh:** every 1 minute
 
 ---
 
@@ -88,4 +88,4 @@ If a fetch fails, the affected panel displays `—` in place of values. No crash
 |------|-----|------|---------|
 | Electricity prices | porssisahko.net | None | 60 min |
 | Weather | open-meteo.com | None | 30 min |
-| Train departures | rata.digitraffic.fi | None | 2 min |
+| Train departures | rata.digitraffic.fi | None | 1 min |
