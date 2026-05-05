@@ -105,34 +105,34 @@ const past    = new Date(Date.now() -  5 * 60000).toISOString();
 const mockTrains = [
   {
     timeTableRows: [
-      { stationShortCode: 'JPÄ', type: 'DEPARTURE', scheduledTime: future1, differenceInMinutes: 0 },
+      { stationShortCode: 'JP', type: 'DEPARTURE', scheduledTime: future1, differenceInMinutes: 0 },
       { stationShortCode: 'TKL', type: 'ARRIVAL',   scheduledTime: future1 },
       { stationShortCode: 'PSL', type: 'ARRIVAL',   scheduledTime: future1 }
     ]
   },
   {
     timeTableRows: [
-      { stationShortCode: 'JPÄ', type: 'DEPARTURE', scheduledTime: future2, differenceInMinutes: 3 },
+      { stationShortCode: 'JP', type: 'DEPARTURE', scheduledTime: future2, differenceInMinutes: 3 },
       { stationShortCode: 'PSL', type: 'ARRIVAL',   scheduledTime: future2 }
     ]
   },
   {
     // already departed — must be excluded
     timeTableRows: [
-      { stationShortCode: 'JPÄ', type: 'DEPARTURE', scheduledTime: past, differenceInMinutes: 0 },
+      { stationShortCode: 'JP', type: 'DEPARTURE', scheduledTime: past, differenceInMinutes: 0 },
       { stationShortCode: 'PSL', type: 'ARRIVAL',   scheduledTime: past }
     ]
   },
   {
     // does not stop at PSL — must be excluded
     timeTableRows: [
-      { stationShortCode: 'JPÄ', type: 'DEPARTURE', scheduledTime: future1, differenceInMinutes: 0 },
+      { stationShortCode: 'JP', type: 'DEPARTURE', scheduledTime: future1, differenceInMinutes: 0 },
       { stationShortCode: 'TKL', type: 'ARRIVAL',   scheduledTime: future1 }
     ]
   }
 ];
 
-const deps = getUpcomingDepartures(mockTrains, 'JPÄ', 'PSL');
+const deps = getUpcomingDepartures(mockTrains, 'JP', 'PSL');
 assert("getUpcomingDepartures: 2 valid trains",    deps.length === 2);
 assert("getUpcomingDepartures: sorted ascending",  deps[0].scheduled < deps[1].scheduled);
 assert("getUpcomingDepartures: delay captured",    deps[1].delayMin === 3);

@@ -232,11 +232,12 @@ function renderElectricity(data) {
   while (chart.firstChild) chart.removeChild(chart.firstChild);
   if (!today.length) return;
 
+  const range = (hi - lo) || 1;
   const now = new Date();
   today.forEach(p => {
     const bar = document.createElement('div');
     bar.className = 'bar ' + getPriceClass(p.price, lo, hi);
-    bar.style.height = Math.max(4, (p.price / hi) * 100) + '%';
+    bar.style.height = Math.max(4, ((p.price - lo) / range) * 100) + '%';
 
     const start = new Date(p.startDate);
     if (start <= now && now < new Date(start.getTime() + 3_600_000)) {
