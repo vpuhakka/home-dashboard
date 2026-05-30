@@ -10,10 +10,49 @@ body {
 
 #app {
   display: grid;
-  grid-template-columns: 40fr 40fr 20fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   gap: 12px;
   padding: 12px;
+  padding-bottom: 30px;
   height: 100vh;
+}
+
+/* Top row - electricity takes 3 cols, weather takes 3 cols */
+#electricity-panel {
+  grid-column: 1 / 4;
+  grid-row: 1;
+}
+
+#weather-panel {
+  grid-column: 4 / 7;
+  grid-row: 1;
+}
+
+/* Bottom row - trains (1/6), datetime (2/6), news (3/6) */
+#trains-panel {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+#datetime-panel {
+  grid-column: 2 / 4;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#news-panel {
+  grid-column: 4 / 7;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .panel {
@@ -66,7 +105,32 @@ body {
 
 .dash { color: #9ca3af; }
 
-/* Chart */
+/* Chart with Axes */
+.chart-container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: 8px;
+}
+
+.y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 10px;
+  color: #9ca3af;
+  padding: 4px 0;
+  min-width: 28px;
+}
+
+.chart-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 #chart {
   display: flex;
   align-items: flex-end;
@@ -90,12 +154,13 @@ body {
 .bar.price-mid  { background: #93c5fd; }
 .bar.price-high { background: #f87171; }
 
-.chart-labels {
+.x-axis {
   display: flex;
   justify-content: space-between;
-  font-size: 9px;
-  color: #d1d5db;
-  margin-top: 2px;
+  font-size: 10px;
+  color: #9ca3af;
+  margin-top: 4px;
+  padding: 0 2px;
 }
 
 /* Weather */
@@ -128,32 +193,87 @@ body {
 .forecast-day  { color: #6b7280; }
 .forecast-temp { font-weight: 600; }
 
+/* Date/Time Panel */
+#datetime-panel #current-date {
+  font-size: 1.2rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+#datetime-panel #current-time {
+  font-size: 5rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Trains */
 .train-row {
   display: flex;
   flex-direction: column;
-  padding: 10px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #f3f4f6;
 }
 
 .train-row:last-child { border-bottom: none; }
 
 .train-time {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 700;
   line-height: 1;
 }
 
 .train-status {
   font-size: 0.75rem;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 .status-ok    { color: #059669; }
 .status-delay { color: #d97706; }
 .status-late  { color: #dc2626; }
 
-/* Footer + clock */
+/* News Panel */
+#news-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.news-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #374151;
+}
+
+.news-item:last-child {
+  border-bottom: none;
+}
+
+.news-item:hover {
+  color: #00b4c4;
+}
+
+/* Scrollbar styling for news list */
+#news-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+#news-list::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 2px;
+}
+
+#news-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+/* Footer */
 #footer {
   position: fixed;
   bottom: 6px;

@@ -15,13 +15,21 @@ function updateClock() {
 
 // ── Electricity ───────────────────────────────────────────────────────────────
 export function getTodayPrices(data) {
-  const todayStr = new Date().toLocaleDateString('fi-FI', { timeZone: 'Europe/Helsinki' });
-  return data.prices
-    .filter(p => {
-      const d = new Date(p.startDate);
-      return d.toLocaleDateString('fi-FI', { timeZone: 'Europe/Helsinki' }) === todayStr;
-    })
+  // Get all prices and sort by time
+  // The API returns prices starting from when they're available (often tomorrow's prices after 13:00)
+  const allPrices = data.prices
+    .filter(p => p.price !== null && p.price !== undefined)
     .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+  
+  // Try to find today's prices first
+  const todayStr = new Date().toLocaleDateString('fi-FI', { timeZone: 'Europe/Helsinki' });
+  const todayPrices = allPrices.filter(p => {
+    const d = new Date(p.startDate);
+    return d.toLocaleDateString('fi-FI', { timeZone: 'Europe/Helsinki' }) === todayStr;
+  });
+  
+  // If no today's prices, return all available (likely tomorrow's prices)
+  return todayPrices.length > 0 ? todayPrices : allPrices;
 }
 
 export function getCurrentPrice(todayPrices) {
@@ -31,7 +39,8 @@ export function getCurrentPrice(todayPrices) {
     const end   = new Date(start.getTime() + 3_600_000);
     return start <= now && now < end;
   });
-  return p ? p.price : null;
+  // If no current hour found, return the first price (for tomorrow's prices display)
+  return p ? p.price : (todayPrices[0] ? todayPrices[0].price : null);
 }
 
 export function getDayHiLo(todayPrices) {
@@ -227,6 +236,19 @@ function renderElectricity(data) {
   setEl('el-price', current !== null ? current.toFixed(1) : '—');
   setEl('el-lo',    lo      !== null ? lo.toFixed(1)      : '—');
   setEl('el-hi',    hi      !== null ? hi.toFixed(1)      : '—');
+  
+  // Show which day's prices these are
+  if (today.length > 0) {
+    const firstPriceDate = new Date(today[0].startDate);
+    const todayStr = new Date().toLocaleDateString('fi-FI', { timeZone: 'Europe/Helsinki' });
+    const priceDateStr = firstPriceDate.toLocaleDateString('fi-FI', { timeZone: 'Europe/Helsinki' });
+    const dateLabel = priceDateStr === todayStr ? '' : '· ' + firstPriceDate.toLocaleDateString('fi-FI', { 
+      timeZone: 'Europe/Helsinki', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+    setEl('el-date', dateLabel);
+  }
 
   const chart = document.getElementById('chart');
   while (chart.firstChild) chart.removeChild(chart.firstChild);
@@ -251,11 +273,16 @@ function renderElectricity(data) {
 
 async function loadElectricity() {
   try {
-    const res = await fetch('https://api.porssisahko.net/v1/latest-prices.json');
+    // Use local proxy to avoid CORS issues
+    const res = await fetch('/api/electricity');
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    renderElectricity(await res.json());
+    const data = await res.json();
+    console.log('Electricity API response:', data);
+    console.log('Prices count:', data.prices ? data.prices.length : 0);
+    renderElectricity(data);
     stampUpdated();
-  } catch {
+  } catch (err) {
+    console.error('Electricity fetch failed:', err);
     setEl('el-price', '—');
     setEl('el-lo',    '—');
     setEl('el-hi',    '—');

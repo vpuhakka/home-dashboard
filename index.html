@@ -14,7 +14,7 @@
 
   <!-- Electricity -->
   <div class="panel" id="electricity-panel">
-    <div class="panel-label">Electricity</div>
+    <div class="panel-label">Electricity <span id="el-date"></span></div>
     <div>
       <span class="big-number" id="el-price">&#x2014;</span>
       <span class="unit">c/kWh</span>
@@ -24,8 +24,25 @@
       <span class="hi">&#x2191; <span id="el-hi">&#x2014;</span></span>
     </div>
     <hr class="divider">
-    <div id="chart"></div>
-    <div class="chart-labels"><span>00</span><span>12</span><span>23</span></div>
+    <div class="chart-container">
+      <div class="y-axis">
+        <span id="y-1"></span>
+        <span id="y-2"></span>
+        <span id="y-3"></span>
+        <span id="y-4"></span>
+        <span id="y-5"></span>
+      </div>
+      <div class="chart-wrapper">
+        <div id="chart"></div>
+        <div class="x-axis">
+          <span id="x-1"></span>
+          <span id="x-2"></span>
+          <span id="x-3"></span>
+          <span id="x-4"></span>
+          <span id="x-5"></span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Weather -->
@@ -50,10 +67,24 @@
     <div id="trains-list"></div>
   </div>
 
+  <!-- Date/Time -->
+  <div class="panel" id="datetime-panel">
+    <div id="current-date">&#x2014;</div>
+    <div id="current-time">&#x2014;</div>
+  </div>
+
+  <!-- News -->
+  <div class="panel" id="news-panel">
+    <div class="panel-label">Yle Uutiset</div>
+    <div id="news-list">
+      <div class="news-item">Loading news...</div>
+    </div>
+  </div>
+
 </div>
 
 <div id="footer">Updated: <span id="last-updated">&#x2014;</span></div>
 
-<script type="module" src="app.js"></script>
+<script src="app-compat.js?v=10"></script>
 </body>
 </html>
