@@ -22,6 +22,15 @@ body {
 #electricity-panel {
   grid-column: 1 / 4;
   grid-row: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#electricity-panel > div:nth-child(2) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 
 #weather-panel {
@@ -75,23 +84,23 @@ body {
 }
 
 .big-number {
-  font-size: 3rem;
+  font-size: 4rem;
   font-weight: 700;
   line-height: 1;
   color: #111827;
 }
 
 .unit {
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   color: #9ca3af;
   margin-left: 4px;
 }
 
 .hi-lo {
   display: flex;
-  gap: 16px;
-  margin-top: 6px;
-  font-size: 0.85rem;
+  gap: 20px;
+  margin-top: 8px;
+  font-size: 1.1rem;
 }
 
 .hi { color: #dc2626; }
@@ -164,30 +173,48 @@ body {
 }
 
 /* Weather */
+#weather-panel {
+  display: flex;
+  flex-direction: column;
+}
+
 .weather-current {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 24px;
+  flex: 1;
 }
 
 .weather-emoji {
-  font-size: 3rem;
+  font-size: 6rem;
   line-height: 1;
 }
 
+#weather-panel .big-number {
+  font-size: 4rem;
+}
+
+#w-condition {
+  text-align: center;
+  font-size: 1.3rem !important;
+  margin-top: 20px !important;
+  margin-bottom: 8px;
+}
+
 .weather-details {
-  font-size: 0.8rem;
+  font-size: 1.3rem;
   color: #6b7280;
   line-height: 1.7;
-  margin-top: 8px;
+  margin-top: 16px;
 }
 
 .forecast-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.82rem;
-  padding: 4px 0;
+  font-size: 1.3rem;
+  padding: 10px 0;
 }
 
 .forecast-day  { color: #6b7280; }
@@ -214,21 +241,21 @@ body {
 .train-row {
   display: flex;
   flex-direction: column;
-  padding: 8px 0;
+  padding: 10px 0;
   border-bottom: 1px solid #f3f4f6;
 }
 
 .train-row:last-child { border-bottom: none; }
 
 .train-time {
-  font-size: 1.3rem;
+  font-size: 1.8rem;
   font-weight: 700;
   line-height: 1;
 }
 
 .train-status {
-  font-size: 0.75rem;
-  margin-top: 2px;
+  font-size: 0.9rem;
+  margin-top: 4px;
 }
 
 .status-ok    { color: #059669; }
@@ -243,10 +270,10 @@ body {
 }
 
 .news-item {
-  padding: 8px 0;
+  padding: 12px 0;
   border-bottom: 1px solid #f3f4f6;
-  font-size: 0.85rem;
-  line-height: 1.4;
+  font-size: 1.2rem;
+  line-height: 1.5;
   color: #374151;
 }
 
@@ -284,11 +311,4 @@ body {
   color: #d1d5db;
 }
 
-#clock {
-  position: fixed;
-  top: 12px;
-  right: 16px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #6b7280;
-}
+/* Clock removed - time now in datetime panel */

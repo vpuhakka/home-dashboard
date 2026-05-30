@@ -156,7 +156,7 @@ function renderWeather(data) {
   var forecastEl = document.getElementById('w-forecast');
   while (forecastEl.firstChild) forecastEl.removeChild(forecastEl.firstChild);
 
-  for (var i = 1; i <= 3; i++) {
+  for (var i = 1; i <= 2; i++) {
     var dayName = DAY_NAMES[new Date(d.time[i] + 'T12:00:00').getDay()];
     var row = document.createElement('div');
     row.className = 'forecast-row';
